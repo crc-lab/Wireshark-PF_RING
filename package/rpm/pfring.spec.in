@@ -1,0 +1,212 @@
+Summary: PF_RING user-space tools
+Name: pfring
+Version: @VERS@
+Release: %{buildrev}
+License: GPL
+Group: Networking/Utilities
+URL: http://www.ntop.org/products/pf_ring/
+Packager: Luca Deri <deri@ntop.org>
+# Temporary location where the RPM will be built
+BuildRoot:  %{_tmppath}/%{name}-%{version}-root
+# Requires: pfring-dkms = @VERS@, net-tools
+Requires: @NDPI_DEP@, net-tools, ethtool @EXTRA_REQUIRES@
+
+# Disable shared libs dependency check (needed by FPGA libs)
+AutoReq: no
+# 
+# As dependecies are disabled (AutoReqProv: no) we must report them manually
+Provides: daq_pfring_zc.so, daq_pfring.so, libpfring.so
+
+%description
+PF_RING kernel module and drivers for high-speed RX/TX package processing
+GIT info: @GIT_BRANCH@:@GIT_HASH@
+
+%install
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+if [ -d $RPM_BUILD_ROOT ]; then
+	\rm -rf $RPM_BUILD_ROOT
+fi
+
+mkdir -p $RPM_BUILD_ROOT/usr/local/pfring
+mkdir -p $RPM_BUILD_ROOT/usr/local/pfring/kernel
+mkdir -p $RPM_BUILD_ROOT/usr/local/include/linux
+mkdir -p $RPM_BUILD_ROOT/usr/local/lib
+mkdir -p $RPM_BUILD_ROOT/usr/bin
+mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
+mkdir -p $RPM_BUILD_ROOT/usr/local/bin
+# Kernel module (DKMS will build and install it)
+#cp $HOME/PF_RING/kernel/pf_ring.ko $RPM_BUILD_ROOT/usr/local/pfring/kernel
+cp $HOME/PF_RING/kernel/linux/pf_ring.h $RPM_BUILD_ROOT/usr/local/include/linux/
+# Userland
+cp $HOME/PF_RING/README.FIRST                  $RPM_BUILD_ROOT/usr/local/pfring/
+cp $HOME/PF_RING/userland/lib/libpfring.a      $RPM_BUILD_ROOT/usr/local/lib
+cp $HOME/PF_RING/userland/lib/libpfring.so     $RPM_BUILD_ROOT/usr/local/lib
+cp $HOME/PF_RING/userland/lib/pfring.h         $RPM_BUILD_ROOT/usr/local/include
+cp $HOME/PF_RING/userland/lib/pfring_zc.h      $RPM_BUILD_ROOT/usr/local/include
+cp $HOME/PF_RING/userland/nbpf/nbpf.h  $RPM_BUILD_ROOT/usr/local/include
+cp $HOME/PF_RING/userland/libpcap/libpcap.a    $RPM_BUILD_ROOT/usr/local/lib
+cp $HOME/PF_RING/userland/libpcap/libpcap.so.1.8.1	$RPM_BUILD_ROOT/usr/local/lib
+#
+# NOTE
+# Unless you install wireshark 2.x you cannot use the extcap plugin as CentOS
+# comes with wireshark 1.x
+#
+mkdir -p $RPM_BUILD_ROOT/usr/lib64/wireshark/extcap
+cp $HOME/PF_RING/userland/wireshark/extcap/ntopdump $RPM_BUILD_ROOT/usr/lib64/wireshark/extcap
+#cp $HOME/PF_RING/userland/tcpdump/tcpdump      $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/userland/examples/pfcount     $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/userland/examples/pfsend      $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/tools/n2if                    $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/package/etc/ld.so.conf.d/pf_ring.conf $RPM_BUILD_ROOT/etc/ld.so.conf.d
+%if 0%{?centos_ver} == 7
+  mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system/
+  cp $HOME/PF_RING/package/etc/systemd/system/pf_ring.service $RPM_BUILD_ROOT/usr/lib/systemd/system/
+  cp $HOME/PF_RING/package/etc/systemd/system/cluster.service $RPM_BUILD_ROOT/usr/lib/systemd/system/
+  cp $HOME/PF_RING/package/etc/systemd/system/cluster@.service $RPM_BUILD_ROOT/usr/lib/systemd/system/
+%else
+  mkdir -p $RPM_BUILD_ROOT/etc/init.d
+  cp $HOME/PF_RING/package/etc/init.d/pf_ring    $RPM_BUILD_ROOT/etc/init.d
+  cp $HOME/PF_RING/package/etc/init.d/cluster    $RPM_BUILD_ROOT/etc/init.d
+%endif
+cp $HOME/PF_RING/package/usr/local/bin/pf_ringctl $RPM_BUILD_ROOT/usr/local/bin
+cp $HOME/PF_RING/package/usr/local/bin/pf_ringcfg $RPM_BUILD_ROOT/usr/local/bin
+cp $HOME/PF_RING/package/usr/local/bin/clusterctl $RPM_BUILD_ROOT/usr/local/bin
+# DAQ
+mkdir -p $RPM_BUILD_ROOT/usr/local/lib/daq
+cp $HOME/PF_RING/userland/snort/pfring-daq-module/daq_pfring.la $RPM_BUILD_ROOT/usr/local/lib/daq
+cp $HOME/PF_RING/userland/snort/pfring-daq-module/.libs/daq_pfring.so $RPM_BUILD_ROOT/usr/local/lib/daq
+cp $HOME/PF_RING/userland/snort/pfring-daq-module-zc/daq_pfring_zc.la $RPM_BUILD_ROOT/usr/local/lib/daq
+cp $HOME/PF_RING/userland/snort/pfring-daq-module-zc/.libs/daq_pfring_zc.so $RPM_BUILD_ROOT/usr/local/lib/daq
+cp -a $HOME/daq-2.?.?/sfbpf/.libs/libsfbpf.so.0 $HOME/daq-2.?.?/sfbpf/.libs/libsfbpf.so.0.0.1 $RPM_BUILD_ROOT/usr/local/lib
+%if %nozc == 0
+cp $HOME/PF_RING/userland/examples_zc/zbalance_ipc $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/userland/examples_zc/zsend $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/userland/examples_zc/zcount $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/userland/examples_zc/zcount_ipc $RPM_BUILD_ROOT/usr/bin
+cp $HOME/PF_RING/userland/examples_ft/ftflow $RPM_BUILD_ROOT/usr/bin
+%endif
+
+
+# Clean out our build directory
+%clean
+rm -fr $RPM_BUILD_ROOT
+
+%files
+/usr/local/include/linux/pf_ring.h
+/usr/local/lib/libpfring.a
+/usr/local/lib/libpfring.so
+/usr/local/lib/libpcap.a
+/usr/local/lib/libpcap.so.1.8.1
+/usr/local/include/pfring.h
+/usr/local/include/pfring_zc.h
+/usr/local/include/nbpf.h
+/usr/local/lib/daq/daq_pfring.la
+/usr/local/lib/daq/daq_pfring.so
+/usr/local/lib/daq/daq_pfring_zc.la
+/usr/local/lib/daq/daq_pfring_zc.so
+/usr/local/lib/libsfbpf.so.0
+/usr/local/lib/libsfbpf.so.0.0.1
+/usr/lib64/wireshark/extcap
+%if %nozc == 0
+/usr/bin/zbalance_ipc
+/usr/bin/zsend
+/usr/bin/zcount
+/usr/bin/zcount_ipc
+/usr/bin/ftflow
+%endif
+#/usr/bin/tcpdump
+/usr/bin/pfcount
+/usr/bin/pfsend
+/usr/bin/n2if
+/usr/local/pfring/README.FIRST
+/etc/ld.so.conf.d/pf_ring.conf
+%if 0%{?centos_ver} == 7
+/usr/lib/systemd/system/pf_ring.service
+/usr/lib/systemd/system/cluster.service
+/usr/lib/systemd/system/cluster@.service
+%else
+/etc/init.d/pf_ring
+/etc/init.d/cluster
+%endif
+/usr/local/bin/pf_ringctl
+/usr/local/bin/pf_ringcfg
+/usr/local/bin/clusterctl
+
+# Set the default attributes of all of the files specified to have an
+# owner and group of root and to inherit the permissions of the file
+# itself.
+%defattr(-, root, root)
+
+# Execution order:
+# install:    pre -> (copy) -> post
+# upgrade:    pre -> (copy) -> post -> preun (old) -> (delete old) -> postun (old)
+# un-install:                          preun       -> (delete)     -> postun
+
+%pre
+case "$1" in
+  1)
+    # install
+  ;;
+  2)
+    # upgrade
+  ;;
+esac
+
+%post
+if [ ! -f /.dockerenv ]; then
+case "$1" in
+  1)
+    # install
+    %if 0%{?centos_ver} == 7
+      /bin/systemctl daemon-reload
+      %systemd_post pf_ring.service cluster.service
+    %else
+      /sbin/chkconfig --add pf_ring
+      /sbin/chkconfig --add cluster
+    %endif
+  ;;
+  2)
+    # upgrade
+    %if 0%{?centos_ver} == 7
+      /bin/systemctl daemon-reload
+    %endif
+  ;;
+esac
+fi
+
+/sbin/ldconfig > /dev/null 2>&1
+
+%postun
+if [ ! -f /.dockerenv ]; then
+%if 0%{?centos_ver} == 7
+  %systemd_postun_with_restart pf_ring.service cluster.service "cluster@*.service"
+%else
+  /etc/init.d/pf_ring restart
+  /etc/init.d/cluster restart
+%endif
+fi
+
+%preun
+if [ ! -f /.dockerenv ]; then
+case "$1" in
+  0)
+    # un-install
+    %if 0%{?centos_ver} == 7
+      %systemd_preun pf_ring.service "cluster.service" "cluster@*.service"
+    %else
+      /etc/init.d/cluster stop
+      /etc/init.d/pf_ring stop
+      /sbin/chkconfig --del cluster
+      /sbin/chkconfig --del pf_ring
+    %endif
+  ;;
+  1)
+    # upgrade
+  ;;
+esac
+fi
+
+%changelog
+* Wed Dec  5 2012  <deri@centos.ntop.org> - @VERS@-%{buildrev}
+- 
+

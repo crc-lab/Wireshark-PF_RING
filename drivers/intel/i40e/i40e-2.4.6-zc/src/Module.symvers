@@ -1,0 +1,4 @@
+0x00000000	pf_ring_zc_dev_handler	/home/mubbashir/PF_RING/kernel/pf_ring	EXPORT_SYMBOL
+0x00000000	pf_ring_skb_ring_handler	/home/mubbashir/PF_RING/kernel/pf_ring	EXPORT_SYMBOL
+0x00000000	i40e_register_client	/home/mubbashir/PF_RING/drivers/intel/i40e/i40e-2.4.6-zc/src/i40e	EXPORT_SYMBOL
+0x00000000	i40e_unregister_client	/home/mubbashir/PF_RING/drivers/intel/i40e/i40e-2.4.6-zc/src/i40e	EXPORT_SYMBOL
