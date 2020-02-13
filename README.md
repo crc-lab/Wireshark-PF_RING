@@ -1,6 +1,6 @@
 # Wireshark-PF_RING
  
-##Installing PF_RING and Integrating external capture module for Wireshark with Wireshark_pfring.sh
+## Installing PF_RING and Integrating external capture module for Wireshark with Wireshark_pfring.sh
 
 1) In directory Wireshark_PF_RING, find bash script Wireshark_pfring.sh
    Script will check for already installed wireshark, if not then it will install latest versrion available.
