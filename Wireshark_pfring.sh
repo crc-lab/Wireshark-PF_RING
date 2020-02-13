@@ -24,7 +24,7 @@ if checker == 0 ; then echo "Wireshark already installed"; else sudo apt install
 
 #Compiling PF_RING and integrating external capture module for wireshark
 
-cd PF_RING/kernel #compiling pfring kernel module
+cd Wireshark-PF_RING/kernel #compiling pfring kernel module
 make
 sudo make install
 
