@@ -35,4 +35,5 @@
    
    cd PF_RING/kernel
    rmmod pf_ring.ko #remove kernel module
+   
    insmod pf_ring.ko min_num_slots='your value' #configured with 65536 ring buffer size 
